@@ -1,0 +1,21 @@
+{
+  "name": "cpp-visual-debugger-server",
+  "version": "1.0.0",
+  "description": "Backend server for C++ Visual Debugger",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "tmp": "^0.2.1",
+    "uuid": "^9.0.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
