@@ -313,6 +313,4 @@ int main() {
     cout << "value of a: " << a << " value of b: " << b << " value of c: " << c << "\n";
     return 0;
 }
-```
-
 ``` 
