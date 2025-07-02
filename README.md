@@ -123,15 +123,6 @@ c++ code editor/
 - Console output (cout)
 - Basic expressions and calculations
 
-## API Endpoints
-
-- `POST /compile` - Compile C++ code
-- `POST /run` - Execute C++ code
-- `POST /debug` - Start debugging session
-- `POST /step` - Execute next step
-- `POST /continue` - Continue execution
-- `POST /stop` - Stop debugging session
-
 ## Contributing
 
 1. Fork the repository
@@ -152,4 +143,176 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Monaco Editor for the excellent code editing experience
 - React team for the amazing framework
-- Node.js community for the robust backend ecosystem 
+- Node.js community for the robust backend ecosystem
+
+## Visualization Support & Example C++ Snippets
+
+### Visualization Capabilities
+- **Supported for Visualization:**
+  - Simple control flow: `for`, `while`, `do-while` loops
+  - Conditional statements: `if`, `else if`, `else`
+  - Variable assignments and updates
+  - Step-by-step execution with variable tracking
+- **Not Supported for Visualization:**
+  - Complex STL containers (e.g., `std::map`, `std::set`, `std::unordered_map`)
+  - Advanced C++ features (templates, lambdas, multi-threading, etc.)
+  - Function pointers, recursion, or dynamic memory visualization
+- **Supported for Code Execution (but not visualization):**
+  - All standard C++ libraries and STL containers
+  - Complex expressions, advanced algorithms, and most C++ features
+
+### Example C++ Code Snippets
+
+#### 1. Loop, Conditionals, and Function Call
+```cpp
+#include <iostream>
+using namespace std;
+
+int sum(int x, int y) {
+    int result = 0;
+    for (int i = x; i <= y; i++) {
+        result += i;
+    }
+    return result;
+}
+
+int main() {
+    int a = 10, b = 20, c = 1;
+    cout << "Initial: a=" << a << " b=" << b << " c=" << c << endl;
+
+    for (int i = 1; i <= 5; i++) {
+        a += i;
+        b -= i;
+        c *= i;
+        if (a > b) {
+            a -= 2;
+        } else if (b > 15) {
+            b /= 2;
+        }
+        cout << "Loop " << i << ": a=" << a << " b=" << b << " c=" << c << endl;
+    }
+
+    int total = sum(a, c);
+    cout << "Sum from a to c: " << total << endl;
+
+    if (total % 2 == 0) {
+        cout << "Total is even" << endl;
+    } else {
+        cout << "Total is odd" << endl;
+    }
+
+    return 0;
+}
+```
+
+#### 2. Nested Loops and Simple Array
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int arr[3] = {1, 2, 3};
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j <= i; j++) {
+            arr[i] += j;
+        }
+        cout << "arr[" << i << "] = " << arr[i] << endl;
+    }
+    return 0;
+}
+```
+
+#### 3. If-Else and While Loop
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n = 5, fact = 1;
+    while (n > 0) {
+        if (n % 2 == 0) {
+            fact *= n;
+        }
+        n--;
+    }
+    cout << "Factorial of even numbers from 5 to 1: " << fact << endl;
+    return 0;
+}
+```
+
+#### 4. Do-While Loop and Simple Math
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 1, sum = 0;
+    do {
+        sum += x * x;
+        x++;
+    } while (x <= 5);
+    cout << "Sum of squares from 1 to 5: " << sum << endl;
+    return 0;
+}
+```
+
+#### 5. Loop, Conditionals, and Function Call (Full Example)
+```cpp
+#include <iostream>
+using namespace std;
+
+int sum(int x, int y) {
+    int result = 0;
+    for (int i = x; i <= y; i++) {
+        result += i;
+    }
+    return result;
+}
+
+int main() {
+    int a = 10, b = 20, c = 1;
+    cout << "Initial: a=" << a << " b=" << b << " c=" << c << endl;
+
+    for (int i = 1; i <= 5; i++) {
+        a += i;
+        b -= i;
+        c *= i;
+        if (a > b) {
+            a -= 2;
+        } else if (b > 15) {
+            b /= 2;
+        }
+        cout << "Loop " << i << ": a=" << a << " b=" << b << " c=" << c << endl;
+    }
+
+    int total = sum(a, c);
+    cout << "Sum from a to c: " << total << endl;
+
+    if (total % 2 == 0) {
+        cout << "Total is even" << endl;
+    } else {
+        cout << "Total is odd" << endl;
+    }
+
+    return 0;
+}
+```
+
+#### 6. Simple For Loop and Variable Updates
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10 , b = 20 , c = 1;
+    for(int i = 1; i <= 5; i++){
+        a += i;
+        b -= i;
+        c *= i;
+    }
+    cout << "value of a: " << a << " value of b: " << b << " value of c: " << c << "\n";
+    return 0;
+}
+```
+
+``` 
