@@ -397,7 +397,7 @@ int main() {
   const autoReplayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // API base URL
-  const API_BASE = 'http://localhost:3001/api';
+  const API_BASE = import.meta.env.VITE_API_URL;
 
   // Highlight current line in Monaco Editor
   useEffect(() => {
