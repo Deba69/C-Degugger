@@ -8,6 +8,11 @@ const tmp = require('tmp');
 const { spawn, exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const cron = require('node-cron');
+
+// Import new modules
+const CompilationPipeline = require('./compilation-pipeline');
+const ExecutionPipeline = require('./execution-pipeline');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +23,28 @@ app.use(bodyParser.json());
 
 // Store active debugging sessions
 const sessions = new Map();
+
+// Initialize pipelines
+const compilationPipeline = new CompilationPipeline();
+const executionPipeline = new ExecutionPipeline();
+
+// Cleanup old containers every 5 minutes
+cron.schedule('*/5 * * * *', async () => {
+    try {
+        await compilationPipeline.cleanup();
+        await executionPipeline.cleanup();
+    } catch (error) {
+        console.error('Error during scheduled cleanup:', error);
+    }
+});
+
+// Initialize the pipelines on startup
+Promise.all([
+    compilationPipeline.initialize(),
+    executionPipeline.initialize()
+]).catch(error => {
+    console.error('Failed to initialize pipelines:', error);
+});
 
 // Replace the CppVisualizer class with a more robust version supporting for, while, do-while, and if/else
 class CppVisualizer {
@@ -167,12 +194,25 @@ class CppVisualizer {
                 this.variables[declMatch[1]] = parseInt(declMatch[2]);
                 description = `Declaring variable ${declMatch[1]} = ${declMatch[2]}`;
             } else {
-                let assignMatch = code.match(/^(\w+)\s*([+\-*/]?=)\s*(\w+|\d+)/);
+                let assignMatch = code.match(/^([a-zA-Z_]\w*)\s*([+\-*/]?=)\s*([a-zA-Z_]\w*|\d+)/);
                 if (assignMatch) {
                     let v = assignMatch[1];
                     let op = assignMatch[2];
                     let val = assignMatch[3];
-                    let right = this.variables.hasOwnProperty(val) ? this.variables[val] : parseInt(val);
+                    let right;
+                    if (this.variables.hasOwnProperty(val)) {
+                        right = this.variables[val];
+                        if (typeof right !== 'number') {
+                            throw new Error(`Variable '${val}' does not contain a numeric value.`);
+                        }
+                    } else if (!isNaN(Number(val))) {
+                        right = parseInt(val);
+                    } else {
+                        throw new Error(`Unknown variable or invalid value: ${val}`);
+                    }
+                    if (typeof this.variables[v] !== 'number') {
+                        throw new Error(`Variable '${v}' is not initialized as a number.`);
+                    }
                     if (op === '=') this.variables[v] = right;
                     if (op === '+=') this.variables[v] += right;
                     if (op === '-=') this.variables[v] -= right;
@@ -584,7 +624,7 @@ function handleRun(sessionId, code, input = "") {
         }
         fs.writeFileSync(tempFilePath, code);
         const exePath = tempFilePath.replace(/\.cpp$/, '.exe');
-        exec(`g++ "${tempFilePath}" -o "${exePath}"`, (compileErr, stdout, stderr) => {
+        exec(`g++ -std=c++20 "${tempFilePath}" -o "${exePath}"`, (compileErr, stdout, stderr) => {
             if (compileErr) {
                 session.ws.send(JSON.stringify({
                     type: 'compileError',
@@ -628,7 +668,7 @@ function handleGdbDebug(sessionId, code, input = "") {
         fs.writeFileSync(tempFilePath, code);
         const exePath = tempFilePath.replace(/\.cpp$/, '.exe');
         // Compile with debug symbols
-        exec(`g++ -g "${tempFilePath}" -o "${exePath}"`, (compileErr, stdout, stderr) => {
+        exec(`g++ -std=c++20 -g "${tempFilePath}" -o "${exePath}"`, (compileErr, stdout, stderr) => {
             if (compileErr) {
                 session.ws.send(JSON.stringify({
                     type: 'compileError',
@@ -743,6 +783,195 @@ function parseGdbState(output) {
     }
     return { currentLine, variables, callStack };
 }
+
+// New REST endpoints for compilation pipeline
+app.post('/api/compile', async (req, res) => {
+    try {
+        const { code, input = '' } = req.body;
+        
+        if (!code) {
+            return res.status(400).json({ error: 'Code is required' });
+        }
+
+        // Validate code first
+        const validation = await compilationPipeline.validateCode(code);
+        if (!validation.isValid) {
+            return res.status(400).json({
+                error: 'Code validation failed',
+                details: validation.errors,
+                warnings: validation.warnings
+            });
+        }
+
+        // Compile and run the code
+        const result = await compilationPipeline.compileAndRun(code, input);
+        
+        res.json(result);
+    } catch (error) {
+        console.error('Error in compile endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Phase 2: New visualization endpoint
+app.post('/api/visualize', async (req, res) => {
+    try {
+        const { code, input = '' } = req.body;
+        
+        if (!code) {
+            return res.status(400).json({ error: 'Code is required' });
+        }
+
+        // Validate code first
+        const validation = await compilationPipeline.validateCode(code);
+        if (!validation.isValid) {
+            return res.status(400).json({
+                error: 'Code validation failed',
+                details: validation.errors,
+                warnings: validation.warnings
+            });
+        }
+
+        // Compile, run, and visualize the code
+        const result = await compilationPipeline.compileAndVisualize(code, input);
+        
+        res.json(result);
+    } catch (error) {
+        console.error('Error in visualize endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Phase 3: Enhanced execution endpoint with comprehensive data
+app.post('/api/execute', async (req, res) => {
+    try {
+        console.log('[DEBUG] /api/execute called');
+        const { code, input = '' } = req.body;
+        
+        if (!code) {
+            console.log('[DEBUG] No code provided');
+            return res.status(400).json({ error: 'Code is required' });
+        }
+
+        // Validate code first
+        console.log('[DEBUG] Validating code...');
+        const validation = await compilationPipeline.validateCode(code);
+        if (!validation.isValid) {
+            console.log('[DEBUG] Code validation failed');
+            return res.status(400).json({
+                error: 'Code validation failed',
+                details: validation.errors,
+                warnings: validation.warnings
+            });
+        }
+
+        // Execute with comprehensive visualization
+        console.log('[DEBUG] Calling executionPipeline.executeWithVisualization...');
+        const result = await executionPipeline.executeWithVisualization(code, input);
+        console.log('[DEBUG] executionPipeline.executeWithVisualization returned');
+        
+        res.json(result);
+        console.log('[DEBUG] Response sent');
+    } catch (error) {
+        console.error('[DEBUG] Error in /api/execute endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Phase 3: Get execution analysis
+app.post('/api/analyze', async (req, res) => {
+    try {
+        const { code, input = '' } = req.body;
+        
+        if (!code) {
+            return res.status(400).json({ error: 'Code is required' });
+        }
+
+        // Execute and get comprehensive analysis
+        const result = await executionPipeline.executeWithVisualization(code, input);
+        
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        // Extract analysis data
+        const analysis = {
+            success: true,
+            executionSummary: result.executionTrace.executionSummary,
+            variableAnalysis: {
+                totalVariables: result.executionTrace.finalState.variables.length,
+                variableHistory: result.executionTrace.variableStates,
+                finalVariables: result.executionTrace.finalState.variables
+            },
+            controlFlowAnalysis: {
+                ifStatements: result.executionTrace.controlFlow.ifStatements,
+                loops: result.executionTrace.controlFlow.loops,
+                functionCalls: result.executionTrace.controlFlow.functionCalls,
+                controlFlowPath: result.executionTrace.controlFlow
+            },
+            ioAnalysis: {
+                inputOperations: result.executionTrace.ioOperations.filter(op => op.type === 'input_operation'),
+                outputOperations: result.executionTrace.ioOperations.filter(op => op.type === 'output_operation'),
+                totalIOOperations: result.executionTrace.ioOperations.length
+            },
+            performanceMetrics: {
+                totalSteps: result.executionTrace.totalSteps,
+                executionTime: result.executionTrace.executionTime,
+                stepsPerSecond: result.executionTrace.totalSteps / (result.executionTrace.executionTime / 1000)
+            }
+        };
+        
+        res.json(analysis);
+    } catch (error) {
+        console.error('Error in analyze endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/api/validate', async (req, res) => {
+    try {
+        const { code } = req.body;
+        
+        if (!code) {
+            return res.status(400).json({ error: 'Code is required' });
+        }
+
+        const validation = await compilationPipeline.validateCode(code);
+        res.json(validation);
+    } catch (error) {
+        console.error('Error in validate endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/compilation-info', async (req, res) => {
+    try {
+        const info = await compilationPipeline.getCompilationInfo();
+        res.json(info);
+    } catch (error) {
+        console.error('Error getting compilation info:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/api/health', async (req, res) => {
+    try {
+        // Test if Docker is available and compilation pipeline is ready
+        const isReady = compilationPipeline.isInitialized;
+        res.json({
+            status: 'ok',
+            docker: isReady,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error in health check:', error);
+        res.status(500).json({ 
+            status: 'error',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {

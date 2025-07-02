@@ -109,4 +109,11 @@ temp/
 # Compiled Python files
 __pycache__/
 *.py[cod]
-*$py.class 
+*$py.class
+
+# Server test files
+server/test-*.js
+
+# Docker-related files in server
+server/Dockerfile
+server/docker-compose.yml 
