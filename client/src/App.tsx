@@ -10,7 +10,6 @@ import {
   FaRedo, 
   FaFastForward,
   FaPause,
-  FaPlay as FaResume,
   FaExclamationTriangle,
   FaCheckCircle,
   FaInfoCircle
@@ -544,7 +543,7 @@ int main() {
       // Update variable history
       setVariableHistory(prev => {
         const newHistory = { ...prev };
-        Object.entries(step.variables).forEach(([name, value]) => {
+        Object.entries(step.variables || {}).forEach(([name, value]) => {
           if (!newHistory[name]) {
             newHistory[name] = [value];
           } else if (newHistory[name][newHistory[name].length - 1] !== value) {
@@ -633,7 +632,7 @@ int main() {
 
     // Build variable history
     steps.forEach(step => {
-      Object.entries((step.variables as { [key: string]: any }) || {}).forEach(([name, value]) => {
+      Object.entries(step.variables || {}).forEach(([name, value]) => {
         if (!variableHistory[name]) {
           variableHistory[name] = [value];
         } else if (variableHistory[name][variableHistory[name].length - 1] !== value) {
@@ -868,7 +867,7 @@ int main() {
                           <span className={`flow-type ${type.split('_')[0]}`}>
                             {type.split('_')[0].toUpperCase()}
                           </span>
-                          <span>{flow.condition || flow.description || type}</span>
+                          <span>{(flow as any).condition || (flow as any).description || type}</span>
                         </div>
                       ))}
                     </ControlFlowPanel>
