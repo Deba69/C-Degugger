@@ -10,6 +10,20 @@ const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
 
+
+app.use(cors({
+    origin: 'https://c-debugger.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true
+  }));
+  
+  // Explicitly handle preflight OPTIONS requests for all routes
+  app.options('*', cors({
+    origin: 'https://c-debugger.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true
+  }));
+
 // Import new modules
 const CompilationPipeline = require('./compilation-pipeline');
 const ExecutionPipeline = require('./execution-pipeline');
@@ -19,18 +33,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Allow only the deployed frontend domain
-app.use(cors({
-  origin: 'https://c-debugger.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
-}));
 
-// Explicitly handle preflight OPTIONS requests for all routes
-app.options('*', cors({
-  origin: 'https://c-debugger.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
-}));
 
 app.use(bodyParser.json());
 
