@@ -18,7 +18,12 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-app.use(cors());
+// Allow only the deployed frontend domain
+app.use(cors({
+  origin: 'https://c-debugger.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
 app.use(bodyParser.json());
 
 // Store active debugging sessions
