@@ -24,6 +24,14 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
+
+// Explicitly handle preflight OPTIONS requests for all routes
+app.options('*', cors({
+  origin: 'https://c-debugger.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 
 // Store active debugging sessions
