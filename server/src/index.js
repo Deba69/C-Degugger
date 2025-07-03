@@ -20,14 +20,14 @@ const wss = new WebSocket.Server({ server });
 
 // Allow only the deployed frontend domain
 app.use(cors({
-  origin: 'https://c-degugger.vercel.app/',
+  origin: 'https://c-degugger.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
 
 // Explicitly handle preflight OPTIONS requests for all routes
 app.options('*', cors({
-  origin: 'https://c-degugger.vercel.app/',
+  origin: 'https://c-degugger.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
