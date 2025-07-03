@@ -481,7 +481,7 @@ int main() {
     setConsoleOutput('Executing code...\n');
 
     try {
-      const response = await fetch(`${API_BASE}/execute`, {
+      const response = await fetch(`${API_BASE}/api/execute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
