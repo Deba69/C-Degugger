@@ -1,5 +1,10 @@
 # C++ Visual Debugger
 
+## 🌐 Live Demo
+
+Check out the live version of the C++ Code Editor here:  
+[https://c-degugger.vercel.app/](https://c-degugger.vercel.app/)
+
 A modern, web-based C++ code editor with real-time debugging capabilities and visual step-by-step execution.
 
 ## Features
@@ -27,22 +32,6 @@ A modern, web-based C++ code editor with real-time debugging capabilities and vi
 - **C++ Compilation** support
 - **GDB Integration** for advanced debugging
 
-## Project Structure
-
-```
-c++ code editor/
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── App.tsx        # Main application component
-│   │   └── ...
-│   ├── package.json
-│   └── ...
-├── server/                 # Node.js backend
-│   ├── src/
-│   │   └── index.js       # Main server file
-│   └── package.json
-└── README.md
-```
 
 ## Installation
 
@@ -88,20 +77,6 @@ c++ code editor/
    npm run dev
    ```
    The client will start on `http://localhost:5173`
-
-### Production Build
-
-1. **Build the client**
-   ```bash
-   cd client
-   npm run build
-   ```
-
-2. **Start the server**
-   ```bash
-   cd server
-   npm start
-   ```
 
 ## Usage
 
