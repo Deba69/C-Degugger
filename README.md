@@ -2,10 +2,10 @@
 
 ## 🌐 Live Demo
 
-Check out the live version of the C++ Code Editor here:  
-[https://c-degugger.vercel.app/](https://c-degugger.vercel.app/)
-
+Check out the live version of the C++ Code Editor here: 
 (**NOTE : The backend is Deployed on Renders free version, which inactivates after 15mins of no Traffic, So the first debugging may take 50sec to start.**)
+
+[https://c-degugger.vercel.app/](https://c-degugger.vercel.app/)
 
 A modern, web-based C++ code editor with real-time debugging capabilities and visual step-by-step execution.
 
